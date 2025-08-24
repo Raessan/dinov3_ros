@@ -1,0 +1,23 @@
+services:
+  dinov3_ros:
+    image: dinov3_ros:latest
+    build:
+      context: .
+      dockerfile: Dockerfile # Dockerfile_local to copy from local
+      network: host # This prevents freezing in commands that require DNS resolution, such as apt-get update
+    container_name: dinov3_ros
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/dinov3_ros # This will be deleted when the final deployment is running
+    environment:
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+      #- RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
+    network_mode: host
+    devices:
+      - /dev/dri:/dev/dri
+    #restart: always
+    command: sleep infinity

@@ -1,0 +1,26 @@
+dinov3_node:
+  ros__parameters:
+    # General params for image
+    img_size: 800
+    patch_size: 16
+    img_mean: [0.485, 0.456, 0.406]
+    img_std: [0.229, 0.224, 0.225]
+    device: 'cuda'
+
+    # General params for node
+    input_image_topic: 'image/topic'
+
+    # Params for dino model
+    dino_model:
+      model_path : '/home/rafa/deep_learning/projects/object_detection_dinov3/dinov3'
+      model_name: 'dinov3_vits16plus'
+      n_layers: 12
+      embed_dim: 384
+      source: "local"
+
+    # Params for object detection (od)
+    detection_model:
+      model_path: '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-22_21-09-15/model_2.pth'
+      fpn_ch: 192
+      n_convs: 4
+      n_classes: 80

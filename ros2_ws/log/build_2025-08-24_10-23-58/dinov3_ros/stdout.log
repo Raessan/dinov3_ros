@@ -1,0 +1,35 @@
+running egg_info
+creating ../../build/dinov3_ros/dinov3_ros.egg-info
+writing ../../build/dinov3_ros/dinov3_ros.egg-info/PKG-INFO
+writing dependency_links to ../../build/dinov3_ros/dinov3_ros.egg-info/dependency_links.txt
+writing entry points to ../../build/dinov3_ros/dinov3_ros.egg-info/entry_points.txt
+writing requirements to ../../build/dinov3_ros/dinov3_ros.egg-info/requires.txt
+writing top-level names to ../../build/dinov3_ros/dinov3_ros.egg-info/top_level.txt
+writing manifest file '../../build/dinov3_ros/dinov3_ros.egg-info/SOURCES.txt'
+reading manifest file '../../build/dinov3_ros/dinov3_ros.egg-info/SOURCES.txt'
+writing manifest file '../../build/dinov3_ros/dinov3_ros.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /dinov3_ros/ros2_ws/build/dinov3_ros/build
+creating /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib
+creating /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros
+copying dinov3_ros/dinov3_node.py -> /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros
+copying dinov3_ros/__init__.py -> /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros
+running install
+running install_lib
+creating /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros
+copying /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros/dinov3_node.py -> /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros
+copying /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros/__init__.py -> /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros
+byte-compiling /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros/dinov3_node.py to dinov3_node.cpython-310.pyc
+byte-compiling /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /dinov3_ros/ros2_ws/install/dinov3_ros/share/ament_index
+creating /dinov3_ros/ros2_ws/install/dinov3_ros/share/ament_index/resource_index
+creating /dinov3_ros/ros2_ws/install/dinov3_ros/share/ament_index/resource_index/packages
+copying resource/dinov3_ros -> /dinov3_ros/ros2_ws/install/dinov3_ros/share/ament_index/resource_index/packages
+copying package.xml -> /dinov3_ros/ros2_ws/install/dinov3_ros/share/dinov3_ros
+running install_egg_info
+Copying ../../build/dinov3_ros/dinov3_ros.egg-info to /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros-0.0.0-py3.10.egg-info
+running install_scripts
+Installing dinov3_node script to /dinov3_ros/ros2_ws/install/dinov3_ros/lib/dinov3_ros
+writing list of installed files to '/dinov3_ros/ros2_ws/build/dinov3_ros/install.log'

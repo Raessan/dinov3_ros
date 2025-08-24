@@ -1,0 +1,25 @@
+[0.244s] Invoking command in '/dinov3_ros/ros2_ws/src/dinov3_ros': PYTHONPATH=/dinov3_ros/ros2_ws/build/dinov3_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/dinov3_ros build --build-base /dinov3_ros/ros2_ws/build/dinov3_ros/build install --record /dinov3_ros/ros2_ws/build/dinov3_ros/install.log --single-version-externally-managed install_data
+[0.337s] running egg_info
+[0.337s] writing ../../build/dinov3_ros/dinov3_ros.egg-info/PKG-INFO
+[0.337s] writing dependency_links to ../../build/dinov3_ros/dinov3_ros.egg-info/dependency_links.txt
+[0.337s] writing entry points to ../../build/dinov3_ros/dinov3_ros.egg-info/entry_points.txt
+[0.337s] writing requirements to ../../build/dinov3_ros/dinov3_ros.egg-info/requires.txt
+[0.337s] writing top-level names to ../../build/dinov3_ros/dinov3_ros.egg-info/top_level.txt
+[0.338s] reading manifest file '../../build/dinov3_ros/dinov3_ros.egg-info/SOURCES.txt'
+[0.338s] writing manifest file '../../build/dinov3_ros/dinov3_ros.egg-info/SOURCES.txt'
+[0.338s] running build
+[0.338s] running build_py
+[0.338s] copying dinov3_ros/dinov3_node.py -> /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros
+[0.338s] running install
+[0.338s] running install_lib
+[0.339s] copying /dinov3_ros/ros2_ws/build/dinov3_ros/build/lib/dinov3_ros/dinov3_node.py -> /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros
+[0.339s] byte-compiling /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros/dinov3_node.py to dinov3_node.cpython-310.pyc
+[0.339s] running install_data
+[0.339s] copying package.xml -> /dinov3_ros/ros2_ws/install/dinov3_ros/share/dinov3_ros
+[0.339s] running install_egg_info
+[0.340s] removing '/dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros-0.0.0-py3.10.egg-info' (and everything under it)
+[0.340s] Copying ../../build/dinov3_ros/dinov3_ros.egg-info to /dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages/dinov3_ros-0.0.0-py3.10.egg-info
+[0.340s] running install_scripts
+[0.350s] Installing dinov3_node script to /dinov3_ros/ros2_ws/install/dinov3_ros/lib/dinov3_ros
+[0.350s] writing list of installed files to '/dinov3_ros/ros2_ws/build/dinov3_ros/install.log'
+[0.363s] Invoked command in '/dinov3_ros/ros2_ws/src/dinov3_ros' returned '0': PYTHONPATH=/dinov3_ros/ros2_ws/build/dinov3_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/dinov3_ros/ros2_ws/install/dinov3_ros/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/dinov3_ros build --build-base /dinov3_ros/ros2_ws/build/dinov3_ros/build install --record /dinov3_ros/ros2_ws/build/dinov3_ros/install.log --single-version-externally-managed install_data
