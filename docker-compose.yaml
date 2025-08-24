@@ -19,5 +19,6 @@ services:
     network_mode: host
     devices:
       - /dev/dri:/dev/dri
+      - /dev/video0:/dev/video0
     #restart: always
     command: sleep infinity

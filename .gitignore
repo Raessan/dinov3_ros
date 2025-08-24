@@ -9,3 +9,14 @@ build/
 *.egg-info/
 
 test_data/
+
+# === ROS 2 build artifacts ===
+build/
+install/
+log/
+
+# Auxiliar ros2 packages
+aux_packages/
+
+# Files of pytorch models
+*.pth

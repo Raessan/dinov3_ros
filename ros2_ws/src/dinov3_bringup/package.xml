@@ -7,6 +7,7 @@
   <maintainer email="root@todo.todo">root</maintainer>
   <license>TODO: License declaration</license>
 
+    <exec_depend>ros2launch</exec_depend>
     <exec_depend>rviz2</exec_depend>
 
   <export>

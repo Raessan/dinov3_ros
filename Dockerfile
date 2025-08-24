@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 # Build arguments
-ARG ROS2_DISTRIBUTION="jazzy"
+ARG ROS2_DISTRIBUTION="humble"
 
 # By default, use ROS 2 Humble as the base image
 FROM osrf/ros:${ROS2_DISTRIBUTION}-desktop
@@ -12,7 +12,13 @@ SHELL ["/bin/bash", "-c"]
 COPY . /dinov3_ros
 
 # # Install dependencies
-RUN apt-get update &&  apt-get install -y python3 python3-pip
+RUN apt-get update &&  apt-get install -y \
+    libboost-all-dev \
+    build-essential \
+    #python3 \
+    python3-pip
+    #libopencv-dev
+
 # RUN apt-get update && apt-get install -y \
 #     software-properties-common \
 #     && add-apt-repository ppa:deadsnakes/ppa -y \
@@ -28,13 +34,16 @@ RUN apt-get update &&  apt-get install -y python3 python3-pip
 # RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 
 # Install requirements (except pytorch)
-RUN pip3 install -r requirements.txt --ignore-installed --break-system-packages
+RUN pip3 install -r requirements.txt 
+#--ignore-installed --break-system-packages
 
 # Install your pytorch version 
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129 --break-system-packages
+RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129 
+#--break-system-packages
 
 # Install subpackage with the models and inference files
-RUN pip install -e . --break-system-packages
+RUN pip install -e . 
+#--break-system-packages
 
 # Install ROS 2 dependencies through rosdep
 RUN source /opt/ros/${ROS2_DISTRIBUTION}/setup.bash && \
