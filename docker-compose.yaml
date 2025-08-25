@@ -16,9 +16,18 @@ services:
       - QT_X11_NO_MITSHM=1
       #- RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
     network_mode: host
     devices:
       - /dev/dri:/dev/dri
       - /dev/video0:/dev/video0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     #restart: always
     command: sleep infinity
