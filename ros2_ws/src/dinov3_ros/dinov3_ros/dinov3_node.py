@@ -51,6 +51,8 @@ class Dinov3Node(LifecycleNode):
         self.declare_parameter("detection_model.fpn_ch", 192)
         self.declare_parameter("detection_model.n_convs", 4)
         self.declare_parameter("detection_model.n_classes", 80)
+        self.declare_parameter("detection_model.score_thresh", 0.2)
+        self.declare_parameter("detection_model.nms_thresh", 0.2)
 
         # Modes
         self.declare_parameter("debug", False)
@@ -86,6 +88,8 @@ class Dinov3Node(LifecycleNode):
                 'fpn_ch': self.get_parameter('detection_model.fpn_ch').get_parameter_value().integer_value,
                 'n_convs': self.get_parameter('detection_model.n_convs').get_parameter_value().integer_value,
                 'n_classes': self.get_parameter('detection_model.n_classes').get_parameter_value().integer_value,
+                'score_thresh': self.get_parameter('detection_model.score_thresh').get_parameter_value().double_value,
+                'nms_thresh': self.get_parameter('detection_model.nms_thresh').get_parameter_value().double_value,
             }
 
             # Modes
@@ -186,7 +190,9 @@ class Dinov3Node(LifecycleNode):
             feats = self.dino_backbone(img_tensor)
 
         if self.perform_detection:
-            boxes, scores, labels = detection_inference(self.detection_head, feats, img_tensor, score_thresh=0.2, nms_thresh=0.6)
+            boxes, scores, labels = detection_inference(self.detection_head, feats, img_tensor, 
+                                                        score_thresh=self.detection_model['score_thresh'], 
+                                                        nms_thresh=self.detection_model['nms_thresh'])
             img_with_boxes = img_with_detections(img_resized, boxes, scores, labels, class_names=DETECTION_CLASS_NAMES)
 
             # Convert to ROS Image message
