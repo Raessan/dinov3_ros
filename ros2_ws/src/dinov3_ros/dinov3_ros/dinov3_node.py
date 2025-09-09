@@ -24,6 +24,10 @@ from dinov3_toolkit.head_detection.model_head import  DinoFCOSHead
 from dinov3_toolkit.head_detection.inference import detection_inference
 from dinov3_toolkit.head_detection.utils import DETECTION_CLASS_NAMES, img_with_detections
 
+from dinov3_toolkit.head_segmentation.model_head import ASPPDecoder
+from dinov3_toolkit.head_segmentation.model_head_light import Mask2FormerLiteHead
+from dinov3_toolkit.head_segmentation.utils import generate_segmentation_overlay, outputs_to_maps
+
 class Dinov3Node(LifecycleNode):
 
     def __init__(self) -> None:
@@ -54,9 +58,16 @@ class Dinov3Node(LifecycleNode):
         self.declare_parameter("detection_model.score_thresh", 0.2)
         self.declare_parameter("detection_model.nms_thresh", 0.2)
 
+        # Segmentation model params
+        self.declare_parameter("segmentation_model.weights_path", '')
+        self.declare_parameter("segmentation_model.classes_path", '')
+        self.declare_parameter("segmentation_model.hidden_dim", 256)
+        self.declare_parameter("segmentation_model.target_size", 320)
+
         # Modes
         self.declare_parameter("debug", False)
         self.declare_parameter("perform_detection", False)
+        self.declare_parameter("perform_segmentation", False)
 
         self.get_logger().info(f"[{self.get_name()}] Created...")
 
@@ -92,9 +103,18 @@ class Dinov3Node(LifecycleNode):
                 'nms_thresh': self.get_parameter('detection_model.nms_thresh').get_parameter_value().double_value,
             }
 
+            # Semantic segmentation params
+            self.segmentation_model = {
+                'weights_path': self.get_parameter('segmentation_model.weights_path').get_parameter_value().string_value,
+                'classes_path': self.get_parameter('segmentation_model.classes_path').get_parameter_value().string_value,
+                'hidden_dim': self.get_parameter('segmentation_model.hidden_dim').get_parameter_value().integer_value,
+                'target_size': self.get_parameter('segmentation_model.target_size').get_parameter_value().integer_value,
+            }
+
             # Modes
             self.debug = self.get_parameter("debug").get_parameter_value().bool_value
             self.perform_detection = self.get_parameter("perform_detection").get_parameter_value().bool_value
+            self.perform_segmentation = self.get_parameter("perform_segmentation").get_parameter_value().bool_value
 
             # Translate mean and std to 3D tensor
             self.img_mean = np.array(self.img_mean, dtype=np.float32)[:, None, None]
@@ -110,6 +130,7 @@ class Dinov3Node(LifecycleNode):
 
             # Publishers
             self.pub_detection = self.create_lifecycle_publisher(Image, "detections", 10)
+            self.pub_segmentation = self.create_lifecycle_publisher(Image, "segmentation_map", 10)
 
             # CV bridge
             self.cv_bridge = CvBridge()
@@ -144,6 +165,16 @@ class Dinov3Node(LifecycleNode):
                 self.detection_head = DinoFCOSHead(backbone_out_channels=self.dino_model['embed_dim'], fpn_channels=self.detection_model['fpn_ch'], num_classes=self.detection_model['n_classes'], num_convs=self.detection_model['n_convs']).to(self.device)
                 self.detection_head.load_state_dict(torch.load(self.detection_model['weights_path'], map_location = self.device))
                 self.detection_head.eval()
+
+            # Open segmentation model
+            if self.perform_segmentation:
+                with open(self.segmentation_model["classes_path"]) as f:
+                    self.segmentation_class_names = [line.strip() for line in f]
+                segmentation_num_classes = len(self.segmentation_class_names)
+                self.segmentation_head = ASPPDecoder(num_classes=segmentation_num_classes, in_ch=self.dino_model['embed_dim'], 
+                                                  target_size=(self.segmentation_model["target_size"], self.segmentation_model["target_size"])).to(self.device)
+                self.segmentation_head.load_state_dict(torch.load(self.segmentation_model['weights_path'], map_location = self.device))
+                self.segmentation_head.eval()
         
         except Exception as e:
             self.get_logger().error(f"Activation failed. Error: {e}")
@@ -200,6 +231,29 @@ class Dinov3Node(LifecycleNode):
 
             # Publish
             self.pub_detection.publish(msg)
+
+        if self.perform_segmentation:
+            semantic_logits = self.segmentation_head(feats)
+
+            semantic_map = outputs_to_maps(semantic_logits, (self.img_size, self.img_size))
+
+            segmentation_img = generate_segmentation_overlay(
+                img_resized,
+                semantic_map,
+                class_names=self.segmentation_class_names,
+                alpha=0.6,
+                background_index=0,
+                seed=42,
+                draw_semantic_labels=True, 
+                semantic_label_fontsize=5,
+            )
+
+            # Convert to ROS Image message
+            msg = self.cv_bridge.cv2_to_imgmsg(segmentation_img, encoding='rgb8')
+
+            # Publish
+            self.pub_segmentation.publish(msg)
+
 
         # results = self.yolo.predict(
         #     source=cv_image,

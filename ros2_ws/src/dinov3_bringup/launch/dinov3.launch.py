@@ -15,7 +15,8 @@ from ament_index_python.packages import get_package_share_directory
 # The real name of the argument is the same as the following but removing "DEFAULT_" and using lowercase
 # The filtered map has less points than the original, and the floor/ceiling is eliminated
 DEFAULT_DEBUG = "true"
-DEFAULT_PERFORM_DETECTION = "true"
+DEFAULT_PERFORM_DETECTION = "false"
+DEFAULT_PERFORM_SEGMENTATION = "true"
 DEFAULT_PARAMS_FILE =  os.path.join(get_package_share_directory("dinov3_bringup"), "config", "params.yaml")
 DEFAULT_TOPIC_IMAGE = "topic_image"
 
@@ -27,6 +28,9 @@ def generate_launch_description():
     perform_detection = LaunchConfiguration('perform_detection')
     perform_detection_arg = DeclareLaunchArgument('perform_detection', default_value=DEFAULT_PERFORM_DETECTION)
 
+    perform_segmentation = LaunchConfiguration('perform_segmentation')
+    perform_segmentation_arg = DeclareLaunchArgument('perform_segmentation', default_value=DEFAULT_PERFORM_SEGMENTATION)
+
     params_file = LaunchConfiguration('params_file')
     params_file_arg = DeclareLaunchArgument('params_file', default_value=DEFAULT_PARAMS_FILE)
 
@@ -34,10 +38,11 @@ def generate_launch_description():
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='false')
 
     topic_image = LaunchConfiguration('topic_image')
-    topic_image_arg = DeclareLaunchArgument('topic_image', default_value='false')
+    topic_image_arg = DeclareLaunchArgument('topic_image', default_value=DEFAULT_TOPIC_IMAGE)
 
     return LaunchDescription([
         perform_detection_arg,
+        perform_segmentation_arg,
         params_file_arg,
         debug_arg,
         use_sim_time_arg,
@@ -50,6 +55,7 @@ def generate_launch_description():
             emulate_tty=True,
             #arguments=[perform_detection],
             parameters=[{'perform_detection': perform_detection},
+                        {'perform_segmentation': perform_segmentation},
                         {'debug': debug},
                         {'use_sim_time': use_sim_time},
                         params_file],

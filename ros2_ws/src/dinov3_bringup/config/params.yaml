@@ -1,7 +1,7 @@
 dinov3_node:
   ros__parameters:
     # General params for image
-    img_size: 800
+    img_size: 640
     patch_size: 16
     img_mean: [0.485, 0.456, 0.406]
     img_std: [0.229, 0.224, 0.225]
@@ -24,3 +24,10 @@ dinov3_node:
       n_classes: 80
       score_thresh: 0.3
       nms_thresh: 0.5
+
+    # Params for semantic segmentation (sseg)
+    segmentation_model:
+      weights_path: '/dinov3_ros/dinov3_toolkit/head_segmentation/weights/model.pth'
+      classes_path: '/dinov3_ros/dinov3_toolkit/head_segmentation/class_names.txt'
+      hidden_dim: 256
+      target_size: 320
