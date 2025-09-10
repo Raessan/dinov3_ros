@@ -19,11 +19,11 @@ dinov3_node:
     # Params for object detection (od)
     detection_model:
       weights_path: '/dinov3_ros/dinov3_toolkit/head_detection/weights/model_12.pth'
+      classes_path: '/dinov3_ros/dinov3_toolkit/head_detection/class_names.txt'
       fpn_ch: 192
       n_convs: 4
-      n_classes: 80
-      score_thresh: 0.3
-      nms_thresh: 0.5
+      score_thresh: 0.2
+      nms_thresh: 0.6
 
     # Params for semantic segmentation (sseg)
     segmentation_model:

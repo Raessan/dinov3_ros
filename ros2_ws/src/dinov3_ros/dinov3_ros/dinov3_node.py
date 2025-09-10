@@ -21,8 +21,7 @@ from dinov3_toolkit.backbone.model_backbone import DinoBackbone
 from dinov3_toolkit.utils import resize_transform, image_to_tensor
 
 from dinov3_toolkit.head_detection.model_head import  DinoFCOSHead
-from dinov3_toolkit.head_detection.inference import detection_inference
-from dinov3_toolkit.head_detection.utils import DETECTION_CLASS_NAMES, img_with_detections
+from dinov3_toolkit.head_detection.utils import detection_inference, generate_detection_overlay
 
 from dinov3_toolkit.head_segmentation.model_head import ASPPDecoder
 from dinov3_toolkit.head_segmentation.model_head_light import Mask2FormerLiteHead
@@ -52,9 +51,9 @@ class Dinov3Node(LifecycleNode):
 
         # Object detection model params
         self.declare_parameter("detection_model.weights_path", '')
+        self.declare_parameter("detection_model.classes_path", '')
         self.declare_parameter("detection_model.fpn_ch", 192)
         self.declare_parameter("detection_model.n_convs", 4)
-        self.declare_parameter("detection_model.n_classes", 80)
         self.declare_parameter("detection_model.score_thresh", 0.2)
         self.declare_parameter("detection_model.nms_thresh", 0.2)
 
@@ -96,9 +95,9 @@ class Dinov3Node(LifecycleNode):
             # Object detection params
             self.detection_model = {
                 'weights_path': self.get_parameter('detection_model.weights_path').get_parameter_value().string_value,
+                'classes_path': self.get_parameter('detection_model.classes_path').get_parameter_value().string_value,
                 'fpn_ch': self.get_parameter('detection_model.fpn_ch').get_parameter_value().integer_value,
                 'n_convs': self.get_parameter('detection_model.n_convs').get_parameter_value().integer_value,
-                'n_classes': self.get_parameter('detection_model.n_classes').get_parameter_value().integer_value,
                 'score_thresh': self.get_parameter('detection_model.score_thresh').get_parameter_value().double_value,
                 'nms_thresh': self.get_parameter('detection_model.nms_thresh').get_parameter_value().double_value,
             }
@@ -135,6 +134,9 @@ class Dinov3Node(LifecycleNode):
             # CV bridge
             self.cv_bridge = CvBridge()
 
+            # Counter image
+            self.img_counter = 0
+
      
         except Exception as e:
             self.get_logger().error(f"Configuration failed. Error: {e}")
@@ -162,7 +164,13 @@ class Dinov3Node(LifecycleNode):
         
             # Open detection model
             if self.perform_detection:
-                self.detection_head = DinoFCOSHead(backbone_out_channels=self.dino_model['embed_dim'], fpn_channels=self.detection_model['fpn_ch'], num_classes=self.detection_model['n_classes'], num_convs=self.detection_model['n_convs']).to(self.device)
+                with open(self.detection_model["classes_path"]) as f:
+                    self.detection_class_names = [line.strip() for line in f]
+                detection_num_classes = len(self.detection_class_names)
+                self.detection_head = DinoFCOSHead(backbone_out_channels=self.dino_model['embed_dim'], 
+                                                   fpn_channels=self.detection_model['fpn_ch'], 
+                                                   num_classes=detection_num_classes, 
+                                                   num_convs=self.detection_model['n_convs']).to(self.device)
                 self.detection_head.load_state_dict(torch.load(self.detection_model['weights_path'], map_location = self.device))
                 self.detection_head.eval()
 
@@ -214,45 +222,48 @@ class Dinov3Node(LifecycleNode):
             self.get_logger().error(f'Could not convert image: {e}')
             return
         
+        self.img_counter += 1
+        print("Processing image: ", self.img_counter)
+        
         img_resized = resize_transform(cv_image, self.img_size, self.patch_size)
         img_tensor = image_to_tensor(img_resized, self.img_mean, self.img_std).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             feats = self.dino_backbone(img_tensor)
 
-        if self.perform_detection:
-            boxes, scores, labels = detection_inference(self.detection_head, feats, img_tensor, 
-                                                        score_thresh=self.detection_model['score_thresh'], 
-                                                        nms_thresh=self.detection_model['nms_thresh'])
-            img_with_boxes = img_with_detections(img_resized, boxes, scores, labels, class_names=DETECTION_CLASS_NAMES)
+            if self.perform_detection:
+                boxes, scores, labels = detection_inference(self.detection_head, feats, (self.img_size, self.img_size), 
+                                                            score_thresh=self.detection_model['score_thresh'], 
+                                                            nms_thresh=self.detection_model['nms_thresh'])
+                img_with_boxes = generate_detection_overlay(img_resized, boxes, scores, labels, class_names=self.detection_class_names)
 
-            # Convert to ROS Image message
-            msg = self.cv_bridge.cv2_to_imgmsg(img_with_boxes, encoding='rgb8')
+                # Convert to ROS Image message
+                msg = self.cv_bridge.cv2_to_imgmsg(img_with_boxes, encoding='rgb8')
 
-            # Publish
-            self.pub_detection.publish(msg)
+                # Publish
+                self.pub_detection.publish(msg)
 
-        if self.perform_segmentation:
-            semantic_logits = self.segmentation_head(feats)
+            if self.perform_segmentation:
+                semantic_logits = self.segmentation_head(feats)
 
-            semantic_map = outputs_to_maps(semantic_logits, (self.img_size, self.img_size))
+                semantic_map = outputs_to_maps(semantic_logits, (self.img_size, self.img_size))
 
-            segmentation_img = generate_segmentation_overlay(
-                img_resized,
-                semantic_map,
-                class_names=self.segmentation_class_names,
-                alpha=0.6,
-                background_index=0,
-                seed=42,
-                draw_semantic_labels=True, 
-                semantic_label_fontsize=5,
-            )
+                segmentation_img = generate_segmentation_overlay(
+                    img_resized,
+                    semantic_map,
+                    class_names=self.segmentation_class_names,
+                    alpha=0.6,
+                    background_index=0,
+                    seed=42,
+                    draw_semantic_labels=True, 
+                    semantic_label_fontsize=5,
+                )
 
-            # Convert to ROS Image message
-            msg = self.cv_bridge.cv2_to_imgmsg(segmentation_img, encoding='rgb8')
+                # Convert to ROS Image message
+                msg = self.cv_bridge.cv2_to_imgmsg(segmentation_img, encoding='rgb8')
 
-            # Publish
-            self.pub_segmentation.publish(msg)
+                # Publish
+                self.pub_segmentation.publish(msg)
 
 
         # results = self.yolo.predict(

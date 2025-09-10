@@ -15,7 +15,7 @@ from ament_index_python.packages import get_package_share_directory
 # The real name of the argument is the same as the following but removing "DEFAULT_" and using lowercase
 # The filtered map has less points than the original, and the floor/ceiling is eliminated
 DEFAULT_DEBUG = "true"
-DEFAULT_PERFORM_DETECTION = "false"
+DEFAULT_PERFORM_DETECTION = "true"
 DEFAULT_PERFORM_SEGMENTATION = "true"
 DEFAULT_PARAMS_FILE =  os.path.join(get_package_share_directory("dinov3_bringup"), "config", "params.yaml")
 DEFAULT_TOPIC_IMAGE = "topic_image"
