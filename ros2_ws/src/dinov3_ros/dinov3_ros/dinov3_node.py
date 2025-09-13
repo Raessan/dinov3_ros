@@ -24,8 +24,9 @@ from dinov3_toolkit.head_detection.model_head import  DinoFCOSHead
 from dinov3_toolkit.head_detection.utils import detection_inference, generate_detection_overlay
 
 from dinov3_toolkit.head_segmentation.model_head import ASPPDecoder
-from dinov3_toolkit.head_segmentation.model_head_light import Mask2FormerLiteHead
 from dinov3_toolkit.head_segmentation.utils import generate_segmentation_overlay, outputs_to_maps
+
+from dinov3_toolkit.head_depth.model_head import DepthHeadLite
 
 class Dinov3Node(LifecycleNode):
 
@@ -63,10 +64,14 @@ class Dinov3Node(LifecycleNode):
         self.declare_parameter("segmentation_model.hidden_dim", 256)
         self.declare_parameter("segmentation_model.target_size", 320)
 
+        # Depth model params
+        self.declare_parameter("depth_model.weights_path", '')
+
         # Modes
         self.declare_parameter("debug", False)
         self.declare_parameter("perform_detection", False)
         self.declare_parameter("perform_segmentation", False)
+        self.declare_parameter("perform_depth", False)
 
         self.get_logger().info(f"[{self.get_name()}] Created...")
 
@@ -110,10 +115,16 @@ class Dinov3Node(LifecycleNode):
                 'target_size': self.get_parameter('segmentation_model.target_size').get_parameter_value().integer_value,
             }
 
+            # Depth params
+            self.depth_model = {
+                'weights_path': self.get_parameter('depth_model.weights_path').get_parameter_value().string_value,
+            }
+
             # Modes
             self.debug = self.get_parameter("debug").get_parameter_value().bool_value
             self.perform_detection = self.get_parameter("perform_detection").get_parameter_value().bool_value
             self.perform_segmentation = self.get_parameter("perform_segmentation").get_parameter_value().bool_value
+            self.perform_depth = self.get_parameter("perform_depth").get_parameter_value().bool_value
 
             # Translate mean and std to 3D tensor
             self.img_mean = np.array(self.img_mean, dtype=np.float32)[:, None, None]
@@ -130,6 +141,7 @@ class Dinov3Node(LifecycleNode):
             # Publishers
             self.pub_detection = self.create_lifecycle_publisher(Image, "detections", 10)
             self.pub_segmentation = self.create_lifecycle_publisher(Image, "segmentation_map", 10)
+            self.pub_depth = self.create_lifecycle_publisher(Image, "depth_map", 10)
 
             # CV bridge
             self.cv_bridge = CvBridge()
@@ -183,6 +195,12 @@ class Dinov3Node(LifecycleNode):
                                                   target_size=(self.segmentation_model["target_size"], self.segmentation_model["target_size"])).to(self.device)
                 self.segmentation_head.load_state_dict(torch.load(self.segmentation_model['weights_path'], map_location = self.device))
                 self.segmentation_head.eval()
+
+            # Open depth model
+            if self.perform_depth:
+                self.depth_head = DepthHeadLite(in_ch=self.dino_model['embed_dim'], out_size=(self.segmentation_model["target_size"], self.segmentation_model["target_size"])).to(self.device)
+                self.depth_head.load_state_dict(torch.load(self.depth_model['weights_path'], map_location = self.device))
+                self.depth_head.eval()
         
         except Exception as e:
             self.get_logger().error(f"Activation failed. Error: {e}")
@@ -265,6 +283,13 @@ class Dinov3Node(LifecycleNode):
                 # Publish
                 self.pub_segmentation.publish(msg)
 
+            if self.perform_segmentation:
+                depth_map = self.depth_head(feats)
+
+                msg = self.cv_bridge.cv2_to_imgmsg(depth_map.squeeze().cpu().numpy(), encoding='32FC1')
+
+                # Publish
+                self.pub_depth.publish(msg)
 
         # results = self.yolo.predict(
         #     source=cv_image,

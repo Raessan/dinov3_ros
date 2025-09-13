@@ -22,8 +22,8 @@ dinov3_node:
       classes_path: '/dinov3_ros/dinov3_toolkit/head_detection/class_names.txt'
       fpn_ch: 192
       n_convs: 4
-      score_thresh: 0.2
-      nms_thresh: 0.6
+      score_thresh: 0.3
+      nms_thresh: 0.5
 
     # Params for semantic segmentation (sseg)
     segmentation_model:
@@ -31,3 +31,7 @@ dinov3_node:
       classes_path: '/dinov3_ros/dinov3_toolkit/head_segmentation/class_names.txt'
       hidden_dim: 256
       target_size: 320
+
+    # Params for depth estimation
+    depth_model:
+      weights_path: '/dinov3_ros/dinov3_toolkit/head_depth/weights/model.pth'

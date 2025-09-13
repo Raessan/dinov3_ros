@@ -17,6 +17,7 @@ from ament_index_python.packages import get_package_share_directory
 DEFAULT_DEBUG = "true"
 DEFAULT_PERFORM_DETECTION = "true"
 DEFAULT_PERFORM_SEGMENTATION = "true"
+DEFAULT_PERFORM_DEPTH = "true"
 DEFAULT_PARAMS_FILE =  os.path.join(get_package_share_directory("dinov3_bringup"), "config", "params.yaml")
 DEFAULT_TOPIC_IMAGE = "topic_image"
 
@@ -31,6 +32,9 @@ def generate_launch_description():
     perform_segmentation = LaunchConfiguration('perform_segmentation')
     perform_segmentation_arg = DeclareLaunchArgument('perform_segmentation', default_value=DEFAULT_PERFORM_SEGMENTATION)
 
+    perform_depth = LaunchConfiguration('perform_depth')
+    perform_depth_arg = DeclareLaunchArgument('perform_depth', default_value=DEFAULT_PERFORM_DEPTH)
+
     params_file = LaunchConfiguration('params_file')
     params_file_arg = DeclareLaunchArgument('params_file', default_value=DEFAULT_PARAMS_FILE)
 
@@ -43,6 +47,7 @@ def generate_launch_description():
     return LaunchDescription([
         perform_detection_arg,
         perform_segmentation_arg,
+        perform_depth_arg,
         params_file_arg,
         debug_arg,
         use_sim_time_arg,
@@ -56,6 +61,7 @@ def generate_launch_description():
             #arguments=[perform_detection],
             parameters=[{'perform_detection': perform_detection},
                         {'perform_segmentation': perform_segmentation},
+                        {'perform_depth': perform_depth},
                         {'debug': debug},
                         {'use_sim_time': use_sim_time},
                         params_file],
