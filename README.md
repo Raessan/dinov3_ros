@@ -82,7 +82,7 @@ Check the following repo: [depth_dinov3](https://github.com/Raessan/depth_dinov3
 
 ## Demo
 
-<img src="assets/test_video_inference.gif" height="300">
+<img src="assets/test_video_inference.gif" height="800">
 
 ## Licensing
 - Code in this repo: Apache-2.0.
