@@ -12,6 +12,7 @@ from rclpy.lifecycle import TransitionCallbackReturn
 from rclpy.lifecycle import LifecycleState
 
 from sensor_msgs.msg import Image
+from vision_msgs.msg import Detection2DArray
 
 import torch
 import numpy as np
@@ -27,6 +28,10 @@ from dinov3_toolkit.head_segmentation.model_head import ASPPDecoder
 from dinov3_toolkit.head_segmentation.utils import generate_segmentation_overlay, outputs_to_maps
 
 from dinov3_toolkit.head_depth.model_head import DepthHeadLite
+
+# Extra functions to convert data to msgs
+from dinov3_ros.utils.detection_utils import outputs_to_detection2darray
+from dinov3_ros.utils.depth_utils import depth_to_colormap
 
 class Dinov3Node(LifecycleNode):
 
@@ -139,9 +144,15 @@ class Dinov3Node(LifecycleNode):
             )
 
             # Publishers
-            self.pub_detection = self.create_lifecycle_publisher(Image, "detections", 10)
-            self.pub_segmentation = self.create_lifecycle_publisher(Image, "segmentation_map", 10)
-            self.pub_depth = self.create_lifecycle_publisher(Image, "depth_map", 10)
+            self.pub_detections = self.create_lifecycle_publisher(Detection2DArray, "dinov3/detections", 10)
+            self.pub_sem_seg = self.create_lifecycle_publisher(Image, "dinov3/sem_seg", 10)
+            self.pub_depth = self.create_lifecycle_publisher(Image, "dinov3/depth", 10)
+
+            # Create extra publishers if debug is true
+            if self.debug == True:
+                self.pub_img_detections = self.create_lifecycle_publisher(Image, "dinov3/debug/img_detections", 10)
+                self.pub_img_sem_seg = self.create_lifecycle_publisher(Image, "dinov3/debug/img_sem_seg", 10)
+                self.pub_img_depth = self.create_lifecycle_publisher(Image, "dinov3/debug/img_depth", 10)
 
             # CV bridge
             self.cv_bridge = CvBridge()
@@ -253,66 +264,67 @@ class Dinov3Node(LifecycleNode):
                 boxes, scores, labels = detection_inference(self.detection_head, feats, (self.img_size, self.img_size), 
                                                             score_thresh=self.detection_model['score_thresh'], 
                                                             nms_thresh=self.detection_model['nms_thresh'])
-                img_with_boxes = generate_detection_overlay(img_resized, boxes, scores, labels, class_names=self.detection_class_names)
+                
+                detections_msg = outputs_to_detection2darray(boxes, scores, labels, msg.header)
+                self.pub_detections.publish(detections_msg)
 
-                # Convert to ROS Image message
-                msg = self.cv_bridge.cv2_to_imgmsg(img_with_boxes, encoding='rgb8')
+                
+                # If debug is activated, we draw the image with detections and publish it
+                if self.debug:
+                    img_with_boxes = generate_detection_overlay(img_resized, boxes, scores, labels, class_names=self.detection_class_names)
 
-                # Publish
-                self.pub_detection.publish(msg)
+                    # Convert to ROS Image message
+                    img_detections_msg = self.cv_bridge.cv2_to_imgmsg(img_with_boxes, encoding='rgb8')
+
+                    # Publish
+                    self.pub_img_detections.publish(img_detections_msg)
 
             if self.perform_segmentation:
                 semantic_logits = self.segmentation_head(feats)
 
                 semantic_map = outputs_to_maps(semantic_logits, (self.img_size, self.img_size))
 
-                segmentation_img = generate_segmentation_overlay(
-                    img_resized,
-                    semantic_map,
-                    class_names=self.segmentation_class_names,
-                    alpha=0.6,
-                    background_index=0,
-                    seed=42,
-                    draw_semantic_labels=True, 
-                    semantic_label_fontsize=5,
-                )
+                sem = np.ascontiguousarray(semantic_map, dtype=np.uint16)  # HxW, class IDs
+                sem_seg_msg = self.cv_bridge.cv2_to_imgmsg(sem, encoding='mono16')
+                sem_seg_msg.header = msg.header
 
-                # Convert to ROS Image message
-                msg = self.cv_bridge.cv2_to_imgmsg(segmentation_img, encoding='rgb8')
+                self.pub_sem_seg.publish(sem_seg_msg)
 
-                # Publish
-                self.pub_segmentation.publish(msg)
+                # If debug is activated, we obtain a colored instance map and publish it
+                if self.debug:
+                    segmentation_img = generate_segmentation_overlay(
+                        img_resized,
+                        semantic_map,
+                        class_names=self.segmentation_class_names,
+                        alpha=0.6,
+                        background_index=0,
+                        seed=42,
+                        draw_semantic_labels=True, 
+                        semantic_label_fontsize=5,
+                    )
+
+                    # Convert to ROS Image message
+                    img_sem_seg_msg = self.cv_bridge.cv2_to_imgmsg(segmentation_img, encoding='rgb8')
+
+                    # Publish
+                    self.pub_img_sem_seg.publish(img_sem_seg_msg)
 
             if self.perform_segmentation:
                 depth_map = self.depth_head(feats)
+                depth_np = np.ascontiguousarray(depth_map.squeeze().cpu().numpy(), dtype=np.float32)
 
-                msg = self.cv_bridge.cv2_to_imgmsg(depth_map.squeeze().cpu().numpy(), encoding='32FC1')
+                depth_msg = self.cv_bridge.cv2_to_imgmsg(depth_np, encoding='32FC1')
+                depth_msg.header = msg.header
+
+                self.pub_depth.publish(depth_msg)
 
                 # Publish
-                self.pub_depth.publish(msg)
-
-        # results = self.yolo.predict(
-        #     source=cv_image,
-        #     verbose=False,
-        #     stream=False,
-        #     conf=self.threshold,
-        #     iou=self.iou,
-        #     imgsz=(self.imgsz_height, self.imgsz_width),
-        #     half=self.half,
-        #     max_det=self.max_det,
-        #     augment=self.augment,
-        #     agnostic_nms=self.agnostic_nms,
-        #     retina_masks=self.retina_masks,
-        #     device=self.device,
-        # )
-        
-
-        # # publish detections
-        # detections_msg.header = msg.header
-        # self._pub.publish(detections_msg)
-
-        # del results
-        # del cv_image
+                if self.debug:
+                    # Publish a depth with colormap
+                    img_depth = depth_to_colormap(depth_np)
+                    img_depth_msg = self.cv_bridge.cv2_to_imgmsg(img_depth, encoding='bgr8')
+                    img_depth_msg.header = msg.header
+                    self.pub_img_depth.publish(img_depth_msg)
 
 def main():
     rclpy.init()

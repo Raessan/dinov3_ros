@@ -58,7 +58,6 @@ def generate_launch_description():
             name="dinov3_node",
             output='screen',
             emulate_tty=True,
-            #arguments=[perform_detection],
             parameters=[{'perform_detection': perform_detection},
                         {'perform_segmentation': perform_segmentation},
                         {'perform_depth': perform_depth},
