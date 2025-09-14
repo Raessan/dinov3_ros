@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>dinov3_bringup</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="root@todo.todo">root</maintainer>
-  <license>TODO: License declaration</license>
+  <version>1.0.0</version>
+  <description>Package to launch dinov3 node</description>
+  <maintainer email="raessan@outlook.com">Rafael Escarabajal</maintainer>
+  <license>Apache-2.0</license>
 
     <exec_depend>ros2launch</exec_depend>
     <exec_depend>rviz2</exec_depend>
