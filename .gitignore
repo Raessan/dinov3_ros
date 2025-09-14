@@ -19,4 +19,4 @@ log/
 aux_packages/
 
 # Files of pytorch models
-*.pth
+dinov3_toolkit/backbone/weights/*.pth

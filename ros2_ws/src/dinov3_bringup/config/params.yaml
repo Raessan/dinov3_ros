@@ -18,7 +18,7 @@ dinov3_node:
 
     # Params for object detection (od)
     detection_model:
-      weights_path: '/dinov3_ros/dinov3_toolkit/head_detection/weights/model_12.pth'
+      weights_path: '/dinov3_ros/dinov3_toolkit/head_detection/weights/model.pth'
       classes_path: '/dinov3_ros/dinov3_toolkit/head_detection/class_names.txt'
       fpn_ch: 192
       n_convs: 4
