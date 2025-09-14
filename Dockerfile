@@ -15,14 +15,11 @@ RUN apt-get update &&  apt-get install -y \
     build-essential \
     python3-pip
 
-# Install requirements (except pytorch)
-RUN pip3 install -r requirements.txt 
+# Install subpackage with the models and inference files (except pytorch)
+RUN pip install -e . 
 
 # Install your pytorch version 
 RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129 
-
-# Install subpackage with the models and inference files
-RUN pip install -e . 
 
 # Install ROS 2 dependencies through rosdep
 RUN source /opt/ros/${ROS2_DISTRIBUTION}/setup.bash && \

@@ -22,8 +22,8 @@ dinov3_node:
       classes_path: '/dinov3_ros/dinov3_toolkit/head_detection/class_names.txt'
       fpn_ch: 192
       n_convs: 4
-      score_thresh: 0.3
-      nms_thresh: 0.5
+      score_thresh: 0.2
+      nms_thresh: 0.1
 
     # Params for semantic segmentation (sseg)
     segmentation_model:
