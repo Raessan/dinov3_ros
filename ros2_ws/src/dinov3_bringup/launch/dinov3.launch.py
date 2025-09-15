@@ -20,6 +20,7 @@ DEFAULT_PERFORM_SEGMENTATION = "true"
 DEFAULT_PERFORM_DEPTH = "true"
 DEFAULT_PARAMS_FILE =  os.path.join(get_package_share_directory("dinov3_bringup"), "config", "params.yaml")
 DEFAULT_TOPIC_IMAGE = "topic_image"
+DEFAULT_IMAGE_RELIABILITY = "2" # 0 corresponds to "SYSTEM_DEFAULT", 1 corresponds to "RELIABLE", 2 corresponds to "BEST_EFFORT"
 
 def generate_launch_description():
     # Launch configurations (associated to launch arguments)
@@ -44,6 +45,9 @@ def generate_launch_description():
     topic_image = LaunchConfiguration('topic_image')
     topic_image_arg = DeclareLaunchArgument('topic_image', default_value=DEFAULT_TOPIC_IMAGE)
 
+    image_reliability = LaunchConfiguration('image_reliability')
+    image_reliability_arg = DeclareLaunchArgument('image_reliability', default_value=DEFAULT_IMAGE_RELIABILITY)
+
     return LaunchDescription([
         perform_detection_arg,
         perform_segmentation_arg,
@@ -52,6 +56,7 @@ def generate_launch_description():
         debug_arg,
         use_sim_time_arg,
         topic_image_arg,
+        image_reliability_arg,
         Node(
             package='dinov3_ros',
             executable="dinov3_node",
@@ -63,6 +68,7 @@ def generate_launch_description():
                         {'perform_depth': perform_depth},
                         {'debug': debug},
                         {'use_sim_time': use_sim_time},
+                        {'image_reliability': image_reliability},
                         params_file],
             remappings=[('topic_image', topic_image)]
         ),

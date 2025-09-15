@@ -90,7 +90,7 @@ class Dinov3Node(LifecycleNode):
             self.img_mean = self.get_parameter("img_mean").get_parameter_value().double_array_value
             self.img_std = self.get_parameter("img_std").get_parameter_value().double_array_value
             self.device = self.get_parameter("device").get_parameter_value().string_value
-            self.reliability = self.get_parameter("image_reliability").get_parameter_value().integer_value
+            self.image_reliability = self.get_parameter("image_reliability").get_parameter_value().integer_value
 
             # DINO model params
             self.dino_model = {
@@ -137,7 +137,7 @@ class Dinov3Node(LifecycleNode):
 
             # Image profile
             self.image_qos_profile = QoSProfile(
-                reliability=self.reliability,
+                reliability=self.image_reliability,
                 history=QoSHistoryPolicy.KEEP_LAST,
                 durability=QoSDurabilityPolicy.VOLATILE,
                 depth=1,

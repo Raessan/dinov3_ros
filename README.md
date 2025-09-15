@@ -54,11 +54,13 @@ Any terminal should be opened as `docker exec -it dinov3_ros bash`.
 
 Launch the bringup file with `ros2 launch bringup dinov3_ros dinov3.launch.py arg1:=value arg2:=value`. The available launch arguments so far are:
 
-- debug: Whether to publish debug images that help interpret visually the results of the tasks. For example, overlaid bounding boxes for the task of detection, or colored depth map in the task of depth estimation (default: *false*).
+- debug: Whether to publish debug images that help interpret visually the results of the tasks. For example, overlaid bounding boxes for the task of detection, or colored depth map in the task of depth estimation (default: *true*).
 
 - perform_{*task*}: *task* can be any of the developed head (detection, segmentation, depth...) and this variables activates or deactivates the task (default: all *true*).
 
 - topic_image: The name of the topic that contains the input image (default: *topic_image*).
+
+- image_reliability: The QoS reliability for the ROS2 subscriber. 0 corresponds to "SYSTEM_DEFAULT", 1 corresponds to "RELIABLE", and 2 corresponds to "BEST_EFFORT" (default: *2*)
 
 - params_file: The path to the config file with required information for the models. This file is by default in `config/params.yaml` and contains important variables such as the `img_size` (default *640x640*, used to train the provided models), the `device` (default *cuda*) and the paths of the backbones and heads, along with variables to create the models or perform inference.
 
@@ -70,15 +72,15 @@ Each task has been trained in a separate repo to obtain a good precision using m
 
 ### Object detection
 
-Check the following repo: [object_detection_dinov3](https://github.com/Raessan/object_detection_dinov3) (repo not public yet)
+Check the following repo: [object_detection_dinov3](https://github.com/Raessan/object_detection_dinov3) (repo public soon)
 
 ### Semantic segmentation
 
-Check the following repo: [semantic_segmentation_dinov3](https://github.com/Raessan/semantic_segmentation_dinov3) (repo not public yet)
+Check the following repo: [semantic_segmentation_dinov3](https://github.com/Raessan/semantic_segmentation_dinov3) (repo public soon)
 
 ### Depth estimation
 
-Check the following repo: [depth_dinov3](https://github.com/Raessan/depth_dinov3) (repo not public yet)
+Check the following repo: [depth_dinov3](https://github.com/Raessan/depth_dinov3) (repo public soon)
 
 ## Demo
 
