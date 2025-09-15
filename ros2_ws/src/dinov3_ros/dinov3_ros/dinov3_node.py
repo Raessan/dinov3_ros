@@ -19,7 +19,7 @@ import numpy as np
 
 from dinov3_toolkit.backbone.model_backbone import DinoBackbone
 
-from dinov3_toolkit.utils import resize_transform, image_to_tensor
+from dinov3_toolkit.common import resize_transform, image_to_tensor
 
 from dinov3_toolkit.head_detection.model_head import  DinoFCOSHead
 from dinov3_toolkit.head_detection.utils import detection_inference, generate_detection_overlay
