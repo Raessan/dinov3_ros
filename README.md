@@ -68,7 +68,9 @@ The file `params.yaml` should be changed before launching the bringup file if th
 
 ## Tasks
 
-Each task has been trained in a separate repo to obtain a good precision using model heads with <5M parameters. We didn't try to beat SOTA models or perform an extensive research, so you are encouraged to bring a new lightweight model since we designed it to be plug and play: each task has a `head_{*task*}` subfolder inside `dinov3_toolkit` where we've put the `model_head.py` and an `utils.py` file that are copied from their original repo. Also, the `backbone` folder has a `model_backbone.py`, and there is a general `common.py` with common functions in `dinov3_toolkit`. Also, notice that some tasks have a `class_names.txt` file with the names of all the classes that were used to train that particular task.
+META has only released model heads for the large ViT-7B backbone, so for smaller backbones we trained task-specific heads (each < 5M parameters) in separate repositories to achieve good precision. Our goal was not to beat SOTA models, but to provide a lightweight, plug-and-play toolkit. 
+
+Each task has a `head_{*task*}` subfolder in `dinov3_toolkit` containing a `model_head.py` and `utils.py` copied from the original repo. The `backbone` folder contains `model_backbone.py`, while `common.py` provides shared utilities. Some tasks also include a `class_names.txt` file listing the classes used for training.
 
 ### Object detection
 

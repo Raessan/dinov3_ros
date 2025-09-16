@@ -144,15 +144,17 @@ class Dinov3Node(LifecycleNode):
             )
 
             # Publishers
-            self.pub_detections = self.create_lifecycle_publisher(Detection2DArray, "dinov3/detections", 10)
-            self.pub_sem_seg = self.create_lifecycle_publisher(Image, "dinov3/sem_seg", 10)
-            self.pub_depth = self.create_lifecycle_publisher(Image, "dinov3/depth", 10)
+            self.pubs = []
+            self.pubs_debug = []
 
-            # Create extra publishers if debug is true
-            if self.debug == True:
-                self.pub_img_detections = self.create_lifecycle_publisher(Image, "dinov3/debug/img_detections", 10)
-                self.pub_img_sem_seg = self.create_lifecycle_publisher(Image, "dinov3/debug/img_sem_seg", 10)
-                self.pub_img_depth = self.create_lifecycle_publisher(Image, "dinov3/debug/img_depth", 10)
+            self.pub_detections = self.make_pub(Detection2DArray, "dinov3/detections", 10)
+            self.pub_sem_seg    = self.make_pub(Image,            "dinov3/sem_seg",    10)
+            self.pub_depth      = self.make_pub(Image,            "dinov3/depth",      10)
+
+            if self.debug:
+                self.pub_img_detections = self.make_pub(Image, "dinov3/debug/img_detections", 10, debug=True)
+                self.pub_img_sem_seg    = self.make_pub(Image, "dinov3/debug/img_sem_seg",    10, debug=True)
+                self.pub_img_depth      = self.make_pub(Image, "dinov3/debug/img_depth",      10, debug=True)
 
             # CV bridge
             self.cv_bridge = CvBridge()
@@ -174,6 +176,9 @@ class Dinov3Node(LifecycleNode):
         try:
             # Create subscription
             self.sub_image = self.create_subscription(Image, "topic_image", self.image_cb, self.image_qos_profile)
+
+            # Activate publishers
+            self.activate_pubs(state)
 
             # DINO model
             self.dino_backbone_loader = torch.hub.load(
@@ -223,14 +228,19 @@ class Dinov3Node(LifecycleNode):
     
     def on_deactivate(self, state: LifecycleState) -> TransitionCallbackReturn:
         self.get_logger().info(f"[{self.get_name()}] Deactivating...")
-
+        self.destroy_subscription(self.sub_image)
+        self.sub_image = None
+        self.deactivate_pubs(state)
+        if self.device=="cuda" and torch.cuda.is_available():
+            self.get_logger().info("Clearing CUDA cache")
+            torch.cuda.empty_cache()
         super().on_deactivate(state)
         self.get_logger().info(f"[{self.get_name()}] Deactivated")
         return TransitionCallbackReturn.SUCCESS
     
     def on_cleanup(self, state: LifecycleState) -> TransitionCallbackReturn:
         self.get_logger().info(f"[{self.get_name()}] Cleaning up...")
-
+        self.destroy_pubs()
         super().on_cleanup(state)
         self.get_logger().info(f"[{self.get_name()}] Cleaned up")
         return TransitionCallbackReturn.SUCCESS
@@ -238,8 +248,12 @@ class Dinov3Node(LifecycleNode):
 
     def on_shutdown(self, state: LifecycleState) -> TransitionCallbackReturn:
         self.get_logger().info(f"[{self.get_name()}] Shutting down...")
-
-        super().on_cleanup(state)
+        self.deactivate_pubs(state)
+        self.destroy_pubs()
+        if self.device=="cuda" and torch.cuda.is_available():
+            self.get_logger().info("Clearing CUDA cache")
+            torch.cuda.empty_cache()
+        super().on_shutdown(state)
         self.get_logger().info(f"[{self.get_name()}] Shutted down")
         return TransitionCallbackReturn.SUCCESS
     
@@ -252,7 +266,6 @@ class Dinov3Node(LifecycleNode):
             return
         
         self.img_counter += 1
-        print("Processing image: ", self.img_counter)
         
         img_resized = resize_transform(cv_image, self.img_size, self.patch_size)
         img_tensor = image_to_tensor(img_resized, self.img_mean, self.img_std).unsqueeze(0).to(self.device)
@@ -318,18 +331,41 @@ class Dinov3Node(LifecycleNode):
 
                 self.pub_depth.publish(depth_msg)
 
-                # Publish
+                # If debug is activated, we obtain a colored depth map and publish it
                 if self.debug:
-                    # Publish a depth with colormap
                     img_depth = depth_to_colormap(depth_np)
                     img_depth_msg = self.cv_bridge.cv2_to_imgmsg(img_depth, encoding='bgr8')
                     img_depth_msg.header = msg.header
                     self.pub_img_depth.publish(img_depth_msg)
 
+    # Helper functions to create publishers
+    def make_pub(self, msg_type, topic, depth=10, debug=False):
+        p = self.create_lifecycle_publisher(msg_type, topic, depth)
+        (self.pubs_debug if debug else self.pubs).append(p)
+        return p
+
+    def activate_pubs(self, state: LifecycleState):
+        for p in (*self.pubs, *self.pubs_debug):
+            try: p.on_activate(state)
+            except Exception as e: self.get_logger().warn(f"Activate publisher failed: {e}")
+
+    def deactivate_pubs(self, state: LifecycleState):
+        for p in (*self.pubs, *self.pubs_debug):
+            try: p.on_deactivate(state)
+            except Exception as e: self.get_logger().warn(f"Deactivate publisher failed: {e}")
+
+    def destroy_pubs(self):
+        for p in (*self.pubs, *self.pubs_debug):
+            try: self.destroy_publisher(p)
+            except Exception: pass
+        self.pubs.clear()
+        self.pubs_debug.clear()
+
 def main():
     rclpy.init()
     node = Dinov3Node()
     node.trigger_configure()
+    # Here we only trigger the activate function. In a more complex scenario the changes of state can be managed differently
     node.trigger_activate()
 
     try:
