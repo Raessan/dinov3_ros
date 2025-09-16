@@ -20,9 +20,12 @@ First, ROS2 Humble should be installed. Follow instructions for [ROS2 Humble ins
 
 ```
 git clone --recurse-submodules https://github.com/Raessan/dinov3_ros.git
-pip3 install -e .
+cd dinov3_ros
+pip install -e .
 cd ros2_ws 
+rosdep install --from-paths src --ignore-src -r -y
 colcon build
+. install/setup.bash
 ```
 
 The only package that has to be installed separately is pytorch, due to its dependence with the CUDA version. For example:
@@ -52,17 +55,17 @@ Any terminal should be opened as `docker exec -it dinov3_ros bash`.
 
 ## Usage
 
-Launch the bringup file with `ros2 launch bringup dinov3_ros dinov3.launch.py arg1:=value arg2:=value`. The available launch arguments so far are:
+Launch the bringup file from the `ros2_ws` folder with the command `ros2 launch bringup dinov3_ros dinov3.launch.py arg1:=value arg2:=value`. The available launch arguments so far are:
 
-- debug: Whether to publish debug images that help interpret visually the results of the tasks. For example, overlaid bounding boxes for the task of detection, or colored depth map in the task of depth estimation (default: *true*).
+- **debug**: Whether to publish debug images that help interpret visually the results of the tasks. For example, overlaid bounding boxes for the task of detection, or colored depth map in the task of depth estimation (default: *true*).
 
-- perform_{*task*}: *task* can be any of the developed head (detection, segmentation, depth...) and this variables activates or deactivates the task (default: all *true*).
+- **perform_{*task*}**: *task* can be any of the developed head (detection, segmentation, depth...) and this variables activates or deactivates the task (default: all *true*).
 
-- topic_image: The name of the topic that contains the input image (default: *topic_image*).
+- **topic_image**: The name of the topic that contains the input image (default: *topic_image*).
 
-- image_reliability: The QoS reliability for the ROS2 subscriber. 0 corresponds to "SYSTEM_DEFAULT", 1 corresponds to "RELIABLE", and 2 corresponds to "BEST_EFFORT" (default: *2*)
+- **image_reliability**: The QoS reliability for the ROS2 subscriber. 0 corresponds to "SYSTEM_DEFAULT", 1 corresponds to "RELIABLE", and 2 corresponds to "BEST_EFFORT" (default: *2*)
 
-- params_file: The path to the config file with required information for the models. This file is by default in `config/params.yaml` and contains important variables such as the `img_size` (default *640x640*, used to train the provided models), the `device` (default *cuda*) and the paths of the backbones and heads, along with variables to create the models or perform inference.
+- **params_file**: The path to the config file with required information for the models. This file is by default in `config/params.yaml` and contains important variables such as the `img_size` (default *640x640*, used to train the provided models), the `device` (default *cuda*) and the paths of the backbones and heads, along with variables to create the models or perform inference.
 
 The file `params.yaml` should be changed before launching the bringup file if the variables should be different from the ones provided.
 
