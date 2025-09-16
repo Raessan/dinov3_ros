@@ -19,7 +19,7 @@ This repository provides ROS 2 nodes for performing multiple vision tasks—such
 First, ROS2 Humble should be installed. Follow instructions for [ROS2 Humble installation](https://docs.ros.org/en/humble/Installation.html). Previous versions are not reliable due to the need of recent versions of Python to run DINOv3.
 
 ```
-git clone https://github.com/Raessan/dinov3_ros.git
+git clone --recurse-submodules https://github.com/Raessan/dinov3_ros.git
 pip3 install -e .
 cd ros2_ws 
 colcon build
