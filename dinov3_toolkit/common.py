@@ -3,38 +3,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-def resize_transform(
-    img: np.ndarray,
-    image_size: int,
-    patch_size: int,
-    interpolation=cv2.INTER_LINEAR
-) -> np.ndarray:
-    """
-    Resize or pad an image (NumPy ndarray) so its dimensions are divisible by patch_size.
-
-    Args:
-        img (np.ndarray): Input image in H x W x C (RGB) format.
-        image_size (int): Target size for the smaller dimension (height).
-        patch_size (int): Patch size to align width and height to multiples.
-        interpolation (int): Interpolation method for resizing.
-        pad_value (int): Fill value for padding.
-
-    Returns:
-        np.ndarray: Padded/resized image (RGB) with shape divisible by patch_size.
-    """
-    h, w = img.shape[:2]
-
-    # Scale the height to image_size, adjust width to preserve aspect ratio
-    h_patches = int(image_size / patch_size)
-    w_patches = int((w * image_size) / (h * patch_size))
-
-    # Delete this line, is for test:
-    w_patches = h_patches
-
-    img_resized = cv2.resize(img, (w_patches*patch_size, h_patches*patch_size), interpolation=interpolation)
-
-    return img_resized
-
 def image_to_tensor(img, mean, std):
     """
     Converts an img to a tensor ready to be used in NN

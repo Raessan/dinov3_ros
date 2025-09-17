@@ -19,7 +19,7 @@ import numpy as np
 
 from dinov3_toolkit.backbone.model_backbone import DinoBackbone
 
-from dinov3_toolkit.common import resize_transform, image_to_tensor
+from dinov3_toolkit.common import image_to_tensor
 
 from dinov3_toolkit.head_detection.model_head import  DinoFCOSHead
 from dinov3_toolkit.head_detection.utils import detection_inference, generate_detection_overlay
@@ -268,7 +268,7 @@ class Dinov3Node(LifecycleNode):
         
         self.img_counter += 1
         
-        img_resized = resize_transform(cv_image, self.img_size, self.patch_size)
+        img_resized = cv2.resize(cv_image, (self.img_size, self.img_size), interpolation=cv2.INTER_LINEAR)
         img_tensor = image_to_tensor(img_resized, self.img_mean, self.img_std).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
