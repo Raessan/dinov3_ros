@@ -155,3 +155,38 @@ class DepthHeadLite(nn.Module):
         # Final resize to requested output (e.g., 640x640)
         x = self._upsample(x, self.out_size)                           # (B,1,H,W)
         return x
+    
+# ----------------- Quick smoke test / example -----------------
+if __name__ == '__main__':
+
+    from model_backbone import DinoBackbone
+    device = "cpu" #"cuda" if torch.cuda.is_available() else "cpu"
+    img_size = 640
+    image = torch.randn(4,3,img_size,img_size).to(device)
+    dinov3_dir = '/home/rafa/deep_learning/projects/depth_dinov3/dinov3'
+    dinov3_weights_path = '/home/rafa/deep_learning/projects/depth_dinov3/results/dinov3_vits16plus_pretrain_lvd1689m-4057cbaa.pth'
+    dino_model = torch.hub.load(
+        repo_or_dir=dinov3_dir,
+        model="dinov3_vits16plus",
+        source="local",
+        weights=dinov3_weights_path
+    )
+    n_layers_dino = 12
+    dino_backbone = DinoBackbone(dino_model, n_layers_dino).to(device)
+    feat = dino_backbone(image)
+    print(feat.shape)
+
+    C = feat.shape[1]
+
+    depth_head = DepthHeadLite(in_ch=C, out_size=(640, 640)).to(device)
+    
+    # ----------------- Utility: parameter counting -----------------
+    def count_parameters(module: nn.Module) -> int:
+        return sum(p.numel() for p in module.parameters() if p.requires_grad)
+    
+    # Print parameter counts
+    print('Depth params: ', count_parameters(depth_head))
+
+    # Forward pass
+    depth_map = depth_head(feat)
+    print("depth_map: ", depth_map.shape)
