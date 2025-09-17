@@ -28,10 +28,11 @@ from dinov3_toolkit.head_segmentation.model_head import ASPPDecoder
 from dinov3_toolkit.head_segmentation.utils import generate_segmentation_overlay, outputs_to_maps
 
 from dinov3_toolkit.head_depth.model_head import DepthHeadLite
+from dinov3_toolkit.head_depth.utils import depth_to_colormap
 
 # Extra functions to convert data to msgs
 from dinov3_ros.utils.detection_utils import outputs_to_detection2darray
-from dinov3_ros.utils.depth_utils import depth_to_colormap
+
 
 class Dinov3Node(LifecycleNode):
 

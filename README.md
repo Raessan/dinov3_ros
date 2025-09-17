@@ -63,7 +63,7 @@ Launch the bringup file from the `ros2_ws` folder with the command `ros2 launch 
 
 - **topic_image**: The name of the topic that contains the input image (default: *topic_image*).
 
-- **image_reliability**: The QoS reliability for the ROS2 subscriber. 0 corresponds to "SYSTEM_DEFAULT", 1 corresponds to "RELIABLE", and 2 corresponds to "BEST_EFFORT" (default: *2*)
+- **image_reliability**: The QoS reliability for the ROS2 subscriber. 0 corresponds to `SYSTEM_DEFAULT`, 1 corresponds to `RELIABLE`, and 2 corresponds to `BEST_EFFORT` (default: *2*)
 
 - **params_file**: The path to the config file with required information for the models. This file is by default in `config/params.yaml` and contains important variables such as the `img_size` (default *640x640*, used to train the provided models), the `device` (default *cuda*) and the paths of the backbones and heads, along with variables to create the models or perform inference.
 
@@ -73,7 +73,7 @@ The file `params.yaml` should be changed before launching the bringup file if th
 
 META has only released model heads for the large ViT-7B backbone, so for smaller backbones we trained task-specific heads (each < 5M parameters) in separate repositories to achieve good precision. Our goal was not to beat SOTA models, but to provide a lightweight, plug-and-play toolkit. 
 
-Each task has a `head_{*task*}` subfolder in `dinov3_toolkit` containing a `model_head.py` and `utils.py` copied from the original repo. The `backbone` folder contains `model_backbone.py`, while `common.py` provides shared utilities. Some tasks also include a `class_names.txt` file listing the classes used for training.
+Each task has a `head_{task}` subfolder in `dinov3_toolkit` containing a `model_head.py` and `utils.py` copied from the original repo. The `backbone` folder contains `model_backbone.py`, while `common.py` provides shared utilities. Some tasks also include a `class_names.txt` file listing the classes used for training.
 
 ### Object detection
 

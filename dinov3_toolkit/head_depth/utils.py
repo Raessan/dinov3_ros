@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 
 def depth_to_colormap(
     depth_m: np.ndarray,
@@ -7,6 +8,7 @@ def depth_to_colormap(
     dmax: float | None = None,
     colormap: int = cv2.COLORMAP_INFERNO,
     invert: bool = True,
+    bgr: bool = True
 ) -> np.ndarray:
     """
     Convert an HxW depth map in meters to a color (BGR) visualization.
@@ -17,6 +19,7 @@ def depth_to_colormap(
         dmax:   Far clip in meters.  If None, uses 95th percentile of valid depths.
         colormap: OpenCV colormap (e.g., cv2.COLORMAP_TURBO, JET, INFERNO...).
         invert:  If True, nearer = brighter/warmer (flip normalization).
+        bgr:     If True return BGR (OpenCV default); if False return RGB.
 
     Returns:
         color_bgr: HxWx3 uint8 image in BGR order.
@@ -53,4 +56,21 @@ def depth_to_colormap(
     if not np.all(valid):
         color_bgr[~valid] = (0, 0, 0)
 
-    return color_bgr
+    # Return in requested channel order
+    if bgr:
+        return color_bgr
+    else:
+        # Convert to RGB by swapping channels
+        return color_bgr[:, :, ::-1].copy()
+
+def visualize_sample(img, depth, figsize=(12, 6)):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+
+    ax1.imshow(img)
+    ax1.axis('off')
+
+    ax2.imshow(depth)
+    ax2.axis('off')
+
+    plt.tight_layout()
+    plt.show()
