@@ -1,19 +1,13 @@
 from launch import LaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, TimerAction
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
-from launch_ros.actions import Node, ComposableNodeContainer
-from launch_ros.substitutions import FindPackageShare
-from launch.conditions import IfCondition, UnlessCondition
-from launch_ros.descriptions import ComposableNode
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 import os
 
 from ament_index_python.packages import get_package_share_directory
 
 # DEFAULT PARAMETERS (change them as arguments if others are needed)
 # The real name of the argument is the same as the following but removing "DEFAULT_" and using lowercase
-# The filtered map has less points than the original, and the floor/ceiling is eliminated
 DEFAULT_DEBUG = "true"
 DEFAULT_PERFORM_DETECTION = "true"
 DEFAULT_PERFORM_SEGMENTATION = "true"
